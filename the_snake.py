@@ -1,4 +1,4 @@
-from random import choice, randint
+from random import choice, randint, randrange
 
 import pygame
 
@@ -109,6 +109,9 @@ class Snake(GameObject):
             )
             pygame.draw.rect(surface, BOARD_BACKGROUND_COLOR, last_rect)
 
+    @property
+    def get_head_position(self):
+        return self.positions[0]
 
 class Apple(GameObject):
     # Метод draw класса Apple
@@ -118,7 +121,7 @@ class Apple(GameObject):
 
     @property
     def randomize_position(self):
-        return (randint(0,SCREEN_WIDTH-GRID_SIZE), randint(0,SCREEN_HEIGHT-GRID_SIZE))
+        return (randrange(0,SCREEN_WIDTH-GRID_SIZE,GRID_SIZE), randrange(0,SCREEN_HEIGHT-GRID_SIZE,GRID_SIZE))
     def draw(self, surface):
         rect = pygame.Rect(
             (self.position[0], self.position[1]),
@@ -131,7 +134,7 @@ def main():
     # Тут нужно создать экземпляры классов.
     apple = Apple(body_color=APPLE_COLOR)
     snake = Snake()
-
+    apple.draw(screen)
     while True:
         handle_keys(snake)
         snake.update_direction()
@@ -139,8 +142,9 @@ def main():
         snake.draw(screen)
         clock.tick(SPEED)
         pygame.display.update()
-        # Тут опишите основную логику игры.
-        # ...
+        if snake.get_head_position == apple.position:
+            apple.position = apple.randomize_position
+            apple.draw(screen)
     pygame.quit()
 
 if __name__ == '__main__':
