@@ -30,7 +30,7 @@ APPLE_COLOR = (255, 0, 0)
 SNAKE_COLOR = (0, 255, 0)
 
 # Скорость движения змейки:
-SPEED = 20
+SPEED = 1
 
 # Настройка игрового окна:
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), 0, 32)
@@ -83,23 +83,25 @@ class Snake(GameObject):
             direction = self.next_direction
         else:
             direction = self.direction
-        if UP == direction or DOWN == direction:
-            self.positions.insert(0,(self.positions[0][0]+GRID_SIZE if UP == direction else self.positions[0][0]-GRID_SIZE,self.positions[0][1]))
+        if RIGHT == direction or LEFT == direction:
+            self.positions.insert(0,(self.positions[0][0]+GRID_SIZE if RIGHT == direction else self.positions[0][0]-GRID_SIZE,self.positions[0][1]))
         else:
-            self.positions.insert(0,(self.positions[0][0], self.positions[0][1]+GRID_SIZE if RIGHT == direction else self.positions[0][1]-GRID_SIZE))
-        self.positions.pop()
+            self.positions.insert(0,(self.positions[0][0], self.positions[0][1]-GRID_SIZE if UP == direction else self.positions[0][1]+GRID_SIZE))
+        self.last = self.positions.pop()
     def draw(self, surface):
-        # Отрисовка головы змейки
-        head_rect = pygame.Rect(self.positions[0], (GRID_SIZE, GRID_SIZE))
-        pygame.draw.rect(surface, self.body_color, head_rect)
-        pygame.draw.rect(surface, BORDER_COLOR, head_rect, 1)
         for position in self.positions[:-1]:
             rect = (
                 pygame.Rect((position[0], position[1]), (GRID_SIZE, GRID_SIZE))
             )
             pygame.draw.rect(surface, self.body_color, rect)
             pygame.draw.rect(surface, BORDER_COLOR, rect, 1)
-        self.last = self.positions[-1]
+
+        # Отрисовка головы змейки
+        head_rect = pygame.Rect(self.positions[0], (GRID_SIZE, GRID_SIZE))
+        pygame.draw.rect(surface, self.body_color, head_rect)
+        pygame.draw.rect(surface, BORDER_COLOR, head_rect, 1)
+
+        # Затирание последнего сегмента
         if self.last:
             last_rect = pygame.Rect(
                 (self.last[0], self.last[1]),
@@ -131,10 +133,10 @@ def main():
     snake = Snake()
 
     while True:
-        snake.draw(screen)
         handle_keys(snake)
         snake.update_direction()
         snake.move()
+        snake.draw(screen)
         clock.tick(SPEED)
         pygame.display.update()
         # Тут опишите основную логику игры.
