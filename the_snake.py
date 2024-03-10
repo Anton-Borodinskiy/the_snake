@@ -153,6 +153,7 @@ class Snake(GameObject):
 
 class Apple(GameObject):
     """Класс для создания яблока"""
+
     def __init__(self):
         super().__init__()
         self.position = self.randomize_position
