@@ -1,5 +1,5 @@
 from random import randrange
-
+from typing import Union, Type
 import pygame
 
 # Инициализация PyGame:
@@ -42,36 +42,15 @@ pygame.display.set_caption('Змейка')
 clock = pygame.time.Clock()
 
 
-# Функция обработки действий пользователя
-def handle_keys(game_object):
-    """Функция для считывания нажатия клавиш"""
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            pygame.quit()
-            raise SystemExit
-        elif event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_UP and game_object.direction != DOWN:
-                game_object.next_direction = UP
-            elif event.key == pygame.K_DOWN and game_object.direction != UP:
-                game_object.next_direction = DOWN
-            elif event.key == pygame.K_LEFT and game_object.direction != RIGHT:
-                game_object.next_direction = LEFT
-            elif event.key == pygame.K_RIGHT and game_object.direction != LEFT:
-                game_object.next_direction = RIGHT
-            elif event.key == pygame.K_ESCAPE:
-                pygame.quit()
-                raise SystemExit
-
-
 class GameObject:
     """Базовый класс для игрового объекта"""
 
-    def __init__(self, position=(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2),
-                 body_color=None):
+    def __init__(self, position: tuple = (SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2),
+                 body_color: Union[None, tuple] = None) -> None:
         self.position = position
         self.body_color = body_color
 
-    def draw(self):
+    def draw(self) -> None:
         """Пустой метод для отрисовки"""
         pass
 
@@ -79,51 +58,51 @@ class GameObject:
 class Snake(GameObject):
     """Класс для создания змеи"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
-        self.positions = [(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2)]
-        self.length = 1
-        self.direction = RIGHT
-        self.next_direction = None
-        self.body_color = SNAKE_COLOR
-        self.last = False
+        self.reset()
         self.reset_key = False
 
     # Метод обновления направления после нажатия на кнопку
-    def update_direction(self):
+    def update_direction(self) -> None:
         """Метод обновления направления после нажатия на кнопку"""
         if self.next_direction:
             self.direction = self.next_direction
             self.next_direction = None
 
-    def move(self):
+    def move(self) -> None:
         """Метод для перемещения объекта"""
         if self.next_direction:
             direction = self.next_direction
         else:
             direction = self.direction
         if RIGHT == direction or LEFT == direction:
-            self.positions.insert(0, ((self.positions[0][0]
-                                       + GRID_SIZE) % SCREEN_WIDTH
-                                      if RIGHT == direction
-                                      else (self.positions[0][0]
-                                            - GRID_SIZE) % SCREEN_WIDTH,
-                                      self.positions[0][1]))
+            position_x = (self.positions[0][0] + GRID_SIZE) % SCREEN_WIDTH \
+                if RIGHT == direction \
+                else (self.positions[0][0] - GRID_SIZE) % SCREEN_WIDTH
+
+            position_y = self.positions[0][1]
+            self.positions.insert(0, (position_x, position_y))
         else:
-            self.positions.insert(0, (self.positions[0][0],
-                                      (self.positions[0][1] - GRID_SIZE) %
-                                      SCREEN_HEIGHT if UP == direction
-                                      else (self.positions[0][1]
-                                            + GRID_SIZE) % SCREEN_HEIGHT))
+            position_x = self.positions[0][0]
+            position_y = (self.positions[0][1] - GRID_SIZE) % SCREEN_HEIGHT \
+                if UP == direction \
+                else (self.positions[0][1] + GRID_SIZE) % SCREEN_HEIGHT
+            self.positions.insert(0, (position_x, position_y))
         if self.positions[0] in self.positions[1:]:
             self.reset()
 
-    def reset(self):
+    def reset(self) -> None:
         """Метод для сброса объекта"""
-        self.__init__()
+        self.positions = [(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2)]
+        self.length = 1
+        self.direction = RIGHT
+        self.next_direction = None
+        self.body_color = SNAKE_COLOR
+        self.last = False
         self.reset_key = True
 
-    def draw(self, surface):
+    def draw(self, surface: Type[pygame.surface.Surface]) -> None:
         """Метод для отрисовки объекта"""
         for position in self.positions[:-1]:
             rect = (
@@ -146,7 +125,7 @@ class Snake(GameObject):
             pygame.draw.rect(surface, BOARD_BACKGROUND_COLOR, last_rect)
 
     @property
-    def get_head_position(self):
+    def get_head_position(self) -> tuple:
         """Атрибут для получения координаты головы змеи"""
         return self.positions[0]
 
@@ -154,18 +133,18 @@ class Snake(GameObject):
 class Apple(GameObject):
     """Класс для создания яблока"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.position = self.randomize_position
         self.body_color = APPLE_COLOR
 
     @property
-    def randomize_position(self):
+    def randomize_position(self) -> tuple:
         """Атрибут для генерации случайной позиции яблока"""
         return (randrange(0, SCREEN_WIDTH - GRID_SIZE, GRID_SIZE),
                 randrange(0, SCREEN_HEIGHT - GRID_SIZE, GRID_SIZE))
 
-    def draw(self, surface):
+    def draw(self, surface: Type[pygame.surface.Surface]) -> None:
         """Метод для отрисовки объекта"""
         rect = pygame.Rect(
             (self.position[0], self.position[1]),
@@ -175,7 +154,28 @@ class Apple(GameObject):
         pygame.draw.rect(surface, BORDER_COLOR, rect, 1)
 
 
-def main():
+# Функция обработки действий пользователя
+def handle_keys(game_object: Type[Snake]) -> None:
+    """Функция для считывания нажатия клавиш"""
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            pygame.quit()
+            raise SystemExit
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_UP and game_object.direction != DOWN:
+                game_object.next_direction = UP
+            elif event.key == pygame.K_DOWN and game_object.direction != UP:
+                game_object.next_direction = DOWN
+            elif event.key == pygame.K_LEFT and game_object.direction != RIGHT:
+                game_object.next_direction = LEFT
+            elif event.key == pygame.K_RIGHT and game_object.direction != LEFT:
+                game_object.next_direction = RIGHT
+            elif event.key == pygame.K_ESCAPE:
+                pygame.quit()
+                raise SystemExit
+
+
+def main() -> None:
     """Основная функция"""
     snake = Snake()
     apple = Apple()
