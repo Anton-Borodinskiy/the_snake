@@ -1,5 +1,8 @@
+# Стандартные библиотеки
 from random import randrange
 from typing import Union, Type
+
+# Сторонние библиотеки
 import pygame
 
 # Инициализация PyGame:
@@ -77,17 +80,19 @@ class Snake(GameObject):
         else:
             direction = self.direction
         if RIGHT == direction or LEFT == direction:
-            position_x = (self.positions[0][0] + GRID_SIZE) % SCREEN_WIDTH \
-                if RIGHT == direction \
-                else (self.positions[0][0] - GRID_SIZE) % SCREEN_WIDTH
+            position_x = ((self.positions[0][0] + GRID_SIZE) % SCREEN_WIDTH
+                          if RIGHT == direction
+                          else
+                          (self.positions[0][0] - GRID_SIZE) % SCREEN_WIDTH)
 
             position_y = self.positions[0][1]
             self.positions.insert(0, (position_x, position_y))
         else:
             position_x = self.positions[0][0]
-            position_y = (self.positions[0][1] - GRID_SIZE) % SCREEN_HEIGHT \
-                if UP == direction \
-                else (self.positions[0][1] + GRID_SIZE) % SCREEN_HEIGHT
+            position_y = ((self.positions[0][1] - GRID_SIZE) % SCREEN_HEIGHT
+                          if UP == direction
+                          else
+                          (self.positions[0][1] + GRID_SIZE) % SCREEN_HEIGHT)
             self.positions.insert(0, (position_x, position_y))
         if self.positions[0] in self.positions[1:]:
             self.reset()
